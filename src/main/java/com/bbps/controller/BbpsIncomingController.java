@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping(consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
 public class BbpsIncomingController {
 
 	@Autowired
@@ -30,7 +29,7 @@ public class BbpsIncomingController {
 	@Autowired
 	private BbpsIncomingService bbpsIncomingService;
 
-	@PostMapping(value = Constants.BBPS + Constants.FWD_SLASH + Constants.BILLER_FETCH_RESPONSE + Constants.URL_1_0)
+	@PostMapping(value = Constants.BBPS + Constants.FWD_SLASH + Constants.BILLER_FETCH_RESPONSE + Constants.URL_1_0,produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Ack> billerfetch(@PathVariable(value = "referenceId") String referenceId,
 			@RequestBody String xmlString) throws JsonProcessingException {
 		log.info("Biller Fetch request [{}]", xmlString);
@@ -41,12 +40,14 @@ public class BbpsIncomingController {
 		return new ResponseEntity<>(ack, HttpStatus.OK);
 	}
 
-	@PostMapping(value = Constants.BBPS + Constants.FWD_SLASH + Constants.BILL_FETCH_RESPONSE + Constants.URL_1_0)
+	@PostMapping(value = Constants.BBPS + Constants.FWD_SLASH + Constants.BILL_FETCH_RESPONSE + Constants.URL_1_0,produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Ack> billfetch(@PathVariable(value = "referenceId") String referenceId,
 			@RequestBody String xmlString) throws JsonProcessingException {
 		log.info("Biller Fetch request [{}]", xmlString);
 		String msgId = UnMarshUtils.getMsgIdBillFetchResponse(xmlString);
+		log.info("Message Id {}",msgId);
 		Ack ack = validationService.getAck(Constants.BILL_FETCH_RESPONSE, xmlString, referenceId, msgId);
+		log.info("Process ACk {}",ack);
 		bbpsIncomingService.pushToTopic(xmlString, Constants.BILL_FETCH_RESPONSE);
 
 		log.info("Bill Fetch  ack-[{}]", ack);
